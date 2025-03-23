@@ -1,40 +1,47 @@
-// /pages/index.js
-import { useState } from 'react';
+export default function handler(req, res) {
+  const html = `
+    <!DOCTYPE html>
+    <html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Simulasi Blockchain</title>
+        <style>
+            body { font-family: Arial, sans-serif; text-align: center; margin: 50px; }
+            button { margin: 10px; padding: 10px; cursor: pointer; }
+            pre { background: #f4f4f4; padding: 10px; text-align: left; overflow-x: auto; }
+        </style>
+    </head>
+    <body>
+        <h1>Simulasi Blockchain</h1>
+        <button onclick="mineBlock()">Mine Block</button>
+        <button onclick="getChain()">Lihat Chain</button>
+        <h2>Status</h2>
+        <pre id="status">Klik tombol untuk memulai</pre>
 
-export default function Home() {
-  const [status, setStatus] = useState('');
-  
-  const mineBlock = async () => {
-    try {
-      const res = await fetch('/api/mine');
-      const data = await res.json();
-      setStatus(JSON.stringify(data, null, 2));
-    } catch (error) {
-      setStatus('Error: ' + error.message);
-    }
-  };
+        <script>
+            function updateStatus(data) {
+                document.getElementById("status").textContent = JSON.stringify(data, null, 2);
+            }
 
-  const getChain = async () => {
-    try {
-      const res = await fetch('/api/chain');
-      const data = await res.json();
-      setStatus(JSON.stringify(data, null, 2));
-    } catch (error) {
-      setStatus('Error: ' + error.message);
-    }
-  };
+            function mineBlock() {
+                fetch("/api/mine")
+                    .then(res => res.json())
+                    .then(updateStatus)
+                    .catch(err => updateStatus({ error: err.message }));
+            }
 
-  return (
-    <div style={{ maxWidth: '600px', margin: 'auto', fontFamily: 'Arial, sans-serif' }}>
-      <h1>Simulasi Blockchain ala BTC</h1>
-      <button onClick={mineBlock} style={{ marginRight: '10px', padding: '10px' }}>
-        Mine Block
-      </button>
-      <button onClick={getChain} style={{ padding: '10px' }}>
-        Lihat Chain
-      </button>
-      <h2>Status</h2>
-      <pre>{status}</pre>
-    </div>
-  );
+            function getChain() {
+                fetch("/api/chain")
+                    .then(res => res.json())
+                    .then(updateStatus)
+                    .catch(err => updateStatus({ error: err.message }));
+            }
+        </script>
+    </body>
+    </html>
+  `;
+
+  res.setHeader("Content-Type", "text/html");
+  res.status(200).send(html);
 }
